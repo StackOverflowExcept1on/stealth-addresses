@@ -18,3 +18,10 @@ docs/
 .env
 .env.*
 !.env.example
+
+# Coverage files
+lcov.info
+coverage/
+
+# Soldeer
+/dependencies

@@ -1,2 +1,4 @@
 forge-std-1.16.1/=dependencies/forge-std-1.16.1/src/
 forge-std/=dependencies/forge-std-1.16.1/src/
+frost-secp256k1-evm-master/=dependencies/frost-secp256k1-evm-master/src/
+frost-secp256k1-evm/=dependencies/frost-secp256k1-evm-master/src/

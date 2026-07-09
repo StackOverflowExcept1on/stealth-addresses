@@ -3,7 +3,7 @@ src = "src"
 out = "out"
 libs = ["dependencies"]
 remappings = [
-    "forge-std/=dependencies/forge-std-1.16.1/src/",
+    "forge-std/=dependencies/forge-std-1.16.2/src/",
     "frost-secp256k1-evm/=dependencies/frost-secp256k1-evm-master/src/",
 ]
 evm_version = "osaka"
@@ -16,7 +16,7 @@ cbor_metadata = false
 revert_strings = "strip"
 
 [dependencies]
-forge-std = "1.16.1"
+forge-std = "1.16.2"
 frost-secp256k1-evm = { version = "master", git = "https://github.com/StackOverflowExcept1on/frost-secp256k1-evm.git", branch = "master" }
 
 [fmt]

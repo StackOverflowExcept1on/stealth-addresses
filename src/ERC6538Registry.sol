@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 import {IERC1271} from "./IERC1271.sol";
 import {IERC6538Registry} from "./IERC6538Registry.sol";
@@ -95,19 +95,24 @@ contract ERC6538Registry is IERC6538Registry {
             bytes32 r;
             bytes32 s;
             uint8 v;
+            // forge-lint: disable-next-item(inline-assembly)
             assembly ("memory-safe") {
+                /* reviewed: ... */
                 r := mload(add(signature, 0x20))
                 s := mload(add(signature, 0x40))
                 v := byte(0, mload(add(signature, 0x60)))
             }
+            // forge-lint: disable-next-item(ecrecover)
             recoveredAddress = ecrecover(dataHash, v, r, s);
         }
 
+        // forge-lint: disable-next-item(uninitialized-local)
         if (((recoveredAddress == address(0) || recoveredAddress != registrant)
                     && (IERC1271(registrant).isValidSignature(dataHash, signature)
                             != IERC1271.isValidSignature.selector))) revert ERC6538Registry__InvalidSignature();
 
         stealthMetaAddressOf[registrant][schemeId] = stealthMetaAddress;
+        // forge-lint: disable-next-item(reentrancy-events)
         emit StealthMetaAddressSet(registrant, schemeId, stealthMetaAddress);
     }
 
@@ -121,6 +126,7 @@ contract ERC6538Registry is IERC6538Registry {
         emit NonceIncremented(msg.sender, nonceOf[msg.sender]);
     }
 
+    /// forge-lint: disable-next-item(mixed-case-function)
     /**
      * @notice Returns the domain separator used in this contract.
      * @dev The domain separator is re-computed if there's a chain fork.
@@ -133,6 +139,7 @@ contract ERC6538Registry is IERC6538Registry {
      * @notice Computes the domain separator for this contract.
      */
     function _computeDomainSeparator() internal view returns (bytes32) {
+        // forge-lint: disable-start(asm-keccak256)
         return keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
@@ -142,5 +149,6 @@ contract ERC6538Registry is IERC6538Registry {
                 address(this)
             )
         );
+        // forge-lint: disable-end(asm-keccak256)
     }
 }

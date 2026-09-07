@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 import {Test, console} from "forge-std/Test.sol";
 import {Memory} from "frost-secp256k1-evm/utils/Memory.sol";
@@ -96,6 +96,7 @@ contract StealthAddressesTest is Test {
 
         // `st:<chain>:0x<compressed spendPk><compressed viewPk>`
         // https://github.com/ethereum-lists/chains
+        // forge-lint: disable-next-item(encode-packed-collision)
         bytes memory stealthMetaAddress = abi.encodePacked(spendPubKey, viewPubKey);
         console.log("Stealth Meta-Address:");
         console.log("st:eth:");
@@ -105,6 +106,7 @@ contract StealthAddressesTest is Test {
         uint256 schemeId = 1;
 
         vm.expectEmit(address(erc6538Registry));
+        // forge-lint: disable-next-item(reentrancy-events)
         emit IERC6538Registry.StealthMetaAddressSet(recipient, schemeId, stealthMetaAddress);
 
         erc6538Registry.registerKeys(schemeId, stealthMetaAddress);
@@ -144,10 +146,12 @@ contract StealthAddressesTest is Test {
         vm.startPrank(sender);
 
         vm.expectEmit(address(erc5564Announcer));
+        // forge-lint: disable-next-item(reentrancy-events)
         emit IERC5564Announcer.Announcement(schemeId, stealthAddress, sender, ephemeralPubKey, metadata);
 
         erc5564Announcer.announce(schemeId, stealthAddress, ephemeralPubKey, metadata);
 
+        // forge-lint: disable-next-item(arbitrary-send-eth, low-level-calls)
         (bool success,) = stealthAddress.call{value: 1 ether}("");
         require(success);
 
@@ -167,7 +171,9 @@ contract StealthAddressesTest is Test {
             StealthAddresses.computeStealthKey(stealthAddress, ephemeralPubKey, viewingKey, spendingKey);
 
         uint256 memPtr4;
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             memPtr4 := add(stealthKey, 0x20)
         }
         uint256 stealthPrivKey = Memory.readWord(memPtr4, 0x00);
@@ -175,6 +181,7 @@ contract StealthAddressesTest is Test {
 
         vm.startPrank(stealthAddress);
 
+        // forge-lint: disable-next-item(arbitrary-send-eth, low-level-calls)
         (success,) = newRecipient.call{value: 1 ether}("");
         require(success);
 

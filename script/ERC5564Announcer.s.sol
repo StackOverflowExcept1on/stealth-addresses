@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 import {Script} from "forge-std/Script.sol";
 import {ERC5564Announcer} from "src/ERC5564Announcer.sol";
 
 contract ERC5564AnnouncerScript is Script {
     ERC5564Announcer public erc5564Announcer;
-
-    function setUp() public {}
 
     function run() public {
         uint256 privateKey = vm.envUint("PRIVATE_KEY");

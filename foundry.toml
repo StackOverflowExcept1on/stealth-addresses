@@ -7,7 +7,7 @@ remappings = [
     "frost-secp256k1-evm/=dependencies/frost-secp256k1-evm-master/src/",
 ]
 evm_version = "osaka"
-solc = "0.8.35"
+solc = "0.8.36"
 optimizer = true
 extra_output_files = ["irOptimized"]
 via_ir = true
@@ -21,6 +21,9 @@ frost-secp256k1-evm = { version = "master", git = "https://github.com/StackOverf
 
 [fmt]
 sort_imports = true
+
+[lint]
+exclude_lints = ["literal-instead-of-constant"]
 
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}"

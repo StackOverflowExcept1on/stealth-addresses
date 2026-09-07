@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 /**
  * @notice Interface for calling the `ERC5564Announcer` contract, which emits an `Announcement`

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 import {Memory} from "frost-secp256k1-evm/utils/Memory.sol";
 import {ChaChaRngOffchain} from "frost-secp256k1-evm/utils/cryptography/ChaChaRngOffchain.sol";
@@ -53,6 +53,7 @@ library StealthAddresses {
         ephemeralPubKey = Secp256k1Arithmetic.compressAffinePoint(memPtr1, ephemeralPubKeyX, ephemeralPubKeyY);
 
         // Parse the spending and viewing public keys, $P_{spend}$ and $P_{view}$, from the stealth meta-address.
+        // forge-lint: disable-next-item(custom-errors)
         require(stealthMetaAddress.length == 66);
 
         uint8 spendPubKeyCompressedY;
@@ -63,7 +64,9 @@ library StealthAddresses {
         uint256 viewPubKeyX;
         uint256 viewPubKeyY;
 
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             spendPubKeyCompressedY := byte(0, mload(add(stealthMetaAddress, 0x20)))
             spendPubKeyX := mload(add(stealthMetaAddress, 0x21))
 
@@ -80,6 +83,7 @@ library StealthAddresses {
 
         // The secret is hashed $s_{h} = \textrm{h}(s)$.
         uint256 sharedSecretXHashed = Hashes.efficientKeccak256(sharedSecretX) % Secp256k1.N;
+        // forge-lint: disable-next-item(custom-errors)
         require(sharedSecretXHashed != 0);
 
         // The view tag $v$ is extracted by taking the most significant byte $s_{h}[0]$.
@@ -110,9 +114,12 @@ library StealthAddresses {
         );
 
         // The recipient's stealth address $a_{stealth}$ is computed as $\textrm{pubkeyToAddress}(P_{stealth})$.
+        // casting to 'uint8' is safe because [explain why]
+        // forge-lint: disable-next-item(unsafe-typecast)
         stealthAddress = address(uint160(Secp256k1.toAddress(stealthPubKeyX, stealthPubKeyY)));
     }
 
+    /// forge-lint: disable-next-item(internal-function-used-once)
     /**
      * @notice Returns true if funds sent to a stealth address belong to the recipient who controls
      *         the corresponding spending key.
@@ -131,13 +138,16 @@ library StealthAddresses {
         bytes memory spendingPubKey
     ) internal view returns (bool) {
         // The `checkStealthAddress` function performs the following computations:
+        // forge-lint: disable-next-item(custom-errors)
         require(ephemeralPubKey.length == 33);
 
         uint8 ephemeralPubKeyCompressedY;
         uint256 ephemeralPubKeyX;
         uint256 ephemeralPubKeyY;
 
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             ephemeralPubKeyCompressedY := byte(0, mload(add(ephemeralPubKey, 0x20)))
             ephemeralPubKeyX := mload(add(ephemeralPubKey, 0x21))
         }
@@ -146,32 +156,42 @@ library StealthAddresses {
         (, ephemeralPubKeyY) =
             Secp256k1Arithmetic.decompressToAffinePoint(memPtr1, ephemeralPubKeyX, ephemeralPubKeyCompressedY);
 
+        // forge-lint: disable-next-item(custom-errors)
         require(viewingKey.length == 32);
 
         uint256 viewPrivKey;
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             viewPrivKey := mload(add(viewingKey, 0x20))
         }
+        // forge-lint: disable-next-item(custom-errors)
         require(Secp256k1.isValidNonZeroScalar(viewPrivKey));
 
+        // forge-lint: disable-next-item(custom-errors)
         require(spendingPubKey.length == 33);
 
         uint8 spendPubKeyCompressedY;
         uint256 spendPubKeyX;
         uint256 spendPubKeyY;
 
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             spendPubKeyCompressedY := byte(0, mload(add(spendingPubKey, 0x20)))
             spendPubKeyX := mload(add(spendingPubKey, 0x21))
         }
 
         (, spendPubKeyY) = Secp256k1Arithmetic.decompressToAffinePoint(memPtr1, spendPubKeyX, spendPubKeyCompressedY);
 
+        // forge-lint: disable-next-item(custom-errors)
         require(metadata.length >= 1);
 
         uint256 metadataViewTag;
 
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             metadataViewTag := byte(0, mload(add(metadata, 0x20)))
         }
 
@@ -185,6 +205,7 @@ library StealthAddresses {
 
         // The secret is hashed $s_{h} = h(s)$.
         uint256 sharedSecretXHashed = Hashes.efficientKeccak256(sharedSecretX) % Secp256k1.N;
+        // forge-lint: disable-next-item(custom-errors)
         require(sharedSecretXHashed != 0);
 
         // The view tag $v$ is extracted by taking the most significant byte $s_{h}[0]$ and can be compared to the given view tag. If the view tags do not match, this `Announcement` is not for the user and the remaining steps can be skipped. If the view tags match, continue on.
@@ -218,12 +239,15 @@ library StealthAddresses {
         );
 
         // The derived stealth address $a_{stealth}$ is computed as $\textrm{pubkeyToAddress}(P_{stealth})$.
+        // casting to 'uint8' is safe because [explain why]
+        // forge-lint: disable-next-item(unsafe-typecast)
         address derivedStealthAddress = address(uint160(Secp256k1.toAddress(stealthPubKeyX, stealthPubKeyY)));
 
         // Return `true` if the stealth address of the announcement matches the derived stealth address, else return `false`.
         return stealthAddress == derivedStealthAddress;
     }
 
+    /// forge-lint: disable-next-item(internal-function-used-once)
     /**
      * @notice Computes the stealth private key for a stealth address.
      * @param stealthAddress The expected stealth address.
@@ -244,13 +268,16 @@ library StealthAddresses {
         uint256 memPtr1 = Memory.allocate(64);
         uint256 memPtr2 = Memory.allocate(192);
 
+        // forge-lint: disable-next-item(custom-errors)
         require(ephemeralPubKey.length == 33);
 
         uint8 ephemeralPubKeyCompressedY;
         uint256 ephemeralPubKeyX;
         uint256 ephemeralPubKeyY;
 
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             ephemeralPubKeyCompressedY := byte(0, mload(add(ephemeralPubKey, 0x20)))
             ephemeralPubKeyX := mload(add(ephemeralPubKey, 0x21))
         }
@@ -258,20 +285,28 @@ library StealthAddresses {
         (, ephemeralPubKeyY) =
             Secp256k1Arithmetic.decompressToAffinePoint(memPtr2, ephemeralPubKeyX, ephemeralPubKeyCompressedY);
 
+        // forge-lint: disable-next-item(custom-errors)
         require(viewingKey.length == 32);
 
         uint256 viewPrivKey;
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             viewPrivKey := mload(add(viewingKey, 0x20))
         }
+        // forge-lint: disable-next-item(custom-errors)
         require(Secp256k1.isValidNonZeroScalar(viewPrivKey));
 
+        // forge-lint: disable-next-item(custom-errors)
         require(viewingKey.length == 32);
 
         uint256 spendPrivKey;
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             spendPrivKey := mload(add(spendingKey, 0x20))
         }
+        // forge-lint: disable-next-item(custom-errors)
         require(Secp256k1.isValidNonZeroScalar(spendPrivKey));
 
         // Shared secret $s$ is computed by multiplying the viewing private key with the ephemeral public key of the announcement $s = p_{view}$ * $P_{ephemeral}$.
@@ -280,10 +315,12 @@ library StealthAddresses {
 
         // The secret is hashed $s_{h} = h(s)$.
         uint256 sharedSecretXHashed = Hashes.efficientKeccak256(sharedSecretX) % Secp256k1.N;
+        // forge-lint: disable-next-item(custom-errors)
         require(sharedSecretXHashed != 0);
 
         // The stealth private key is computed as $p_{stealth} = p_{spend} + s_h$.
         uint256 stealthPrivKey = addmod(spendPrivKey, sharedSecretXHashed, Secp256k1.N);
+        // forge-lint: disable-next-item(custom-errors)
         require(Secp256k1.isValidNonZeroScalar(stealthPrivKey));
 
         // https://github.com/verklegarden/crysol/pull/19
@@ -291,12 +328,17 @@ library StealthAddresses {
         uint256 v = Secp256k1.yParityEthereum(Secp256k1.GY);
         uint256 r = Secp256k1.GX;
         uint256 s = mulmod(r, stealthPrivKey, Secp256k1.N);
+        // casting to 'uint8' is safe because [explain why]
+        // forge-lint: disable-next-item(unsafe-typecast)
         address recovered = address(uint160(ECDSA.recover(memPtr2, e, v, r, s)));
+        // forge-lint: disable-next-item(custom-errors)
         require(recovered == stealthAddress);
 
         Memory.writeWord(memPtr1, 0x00, 32);
         Memory.writeWord(memPtr1, 0x20, stealthPrivKey);
+        // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
+            /* reviewed: ... */
             stealthKey := memPtr1
         }
     }

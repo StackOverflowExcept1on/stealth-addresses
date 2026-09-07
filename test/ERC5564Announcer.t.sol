@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.36;
 
 import {Test, Vm} from "forge-std/Test.sol";
 import {ChaChaRngOffchain} from "frost-secp256k1-evm/utils/cryptography/ChaChaRngOffchain.sol";
@@ -20,11 +20,14 @@ contract ERC5564AnnouncerTest is Test {
 
         uint256 schemeId = 1;
         address stealthAddress = makeAddr("stealthAddress");
+        // casting to 'uint8' is safe because [explain why]
+        // forge-lint: disable-next-item(unsafe-typecast)
         bytes memory ephemeralPubKey =
             abi.encodePacked(uint8(Secp256k1.yCompressed(wallet.publicKeyY)), wallet.publicKeyX);
         bytes memory metadata = hex"ff";
 
         vm.expectEmit(address(erc5564Announcer));
+        // forge-lint: disable-next-item(reentrancy-events)
         emit IERC5564Announcer.Announcement(schemeId, stealthAddress, address(this), ephemeralPubKey, metadata);
 
         erc5564Announcer.announce(schemeId, stealthAddress, ephemeralPubKey, metadata);

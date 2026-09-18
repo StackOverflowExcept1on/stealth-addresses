@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.37;
 
 import {Script} from "forge-std/Script.sol";
 import {ERC6538Registry} from "src/ERC6538Registry.sol";

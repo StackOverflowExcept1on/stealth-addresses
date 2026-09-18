@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.37;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC5564AnnouncerScript} from "script/ERC5564Announcer.s.sol";

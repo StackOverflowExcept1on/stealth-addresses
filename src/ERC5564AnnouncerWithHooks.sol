@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.37;
 
 import {IERC5564Announcer} from "./IERC5564Announcer.sol";
 import {Memory} from "frost-secp256k1-evm/utils/Memory.sol";
@@ -50,6 +50,7 @@ contract ERC5564AnnouncerWithHooks is IERC5564Announcer {
             Secp256k1Arithmetic.decompressToAffinePoint(memPtr, ephemeralPubKey);
         }
 
+        // forge-lint: disable-next-item(reentrancy-events)
         emit Announcement(schemeId, stealthAddress, msg.sender, ephemeralPubKey, metadata);
     }
 }

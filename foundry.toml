@@ -7,7 +7,7 @@ remappings = [
     "frost-secp256k1-evm/=dependencies/frost-secp256k1-evm-master/src/",
 ]
 evm_version = "osaka"
-solc = "0.8.36"
+solc = "0.8.37"
 optimizer = true
 extra_output_files = ["irOptimized"]
 via_ir = true

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.37;
 
 import {IERC1271} from "./IERC1271.sol";
 import {IERC6538Registry} from "./IERC6538Registry.sol";

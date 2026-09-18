@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.37;
 
 import {Test, Vm} from "forge-std/Test.sol";
 import {ChaChaRngOffchain} from "frost-secp256k1-evm/utils/cryptography/ChaChaRngOffchain.sol";

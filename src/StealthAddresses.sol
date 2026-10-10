@@ -15,6 +15,15 @@ import {Secp256k1Arithmetic} from "frost-secp256k1-evm/utils/cryptography/Secp25
  */
 library StealthAddresses {
     /**
+     * @dev Size of the pre-allocated memory buffer associated with `modexp` pre-compile contract.
+     */
+    uint256 internal constant PRE_ALLOCATED_BUFFER_SIZE = 192;
+    /**
+     * @dev Size of the private key.
+     */
+    uint256 internal constant PRIVATE_KEY_SIZE = 32;
+
+    /**
      * @notice Generates a stealth address from a stealth meta address.
      * @param stealthMetaAddress The recipient's stealth meta-address.
      * @return stealthAddress The recipient's stealth address.
@@ -45,7 +54,7 @@ library StealthAddresses {
     {
         // The `generateStealthAddress` function performs the following computations:
         uint256 memPtr1 = Memory.allocate(96);
-        uint256 memPtr2 = Memory.allocate(192);
+        uint256 memPtr2 = Memory.allocate(PRE_ALLOCATED_BUFFER_SIZE);
 
         // Derive the ephemeral public key $P_{ephemeral}$ from $p_{ephemeral}$.
         (uint256 ephemeralPubKeyX, uint256 ephemeralPubKeyY) =
@@ -139,7 +148,7 @@ library StealthAddresses {
     ) internal view returns (bool) {
         // The `checkStealthAddress` function performs the following computations:
         // forge-lint: disable-next-item(custom-errors)
-        require(ephemeralPubKey.length == 33);
+        require(ephemeralPubKey.length == Secp256k1Arithmetic.COMPRESSED_POINT_SIZE);
 
         uint8 ephemeralPubKeyCompressedY;
         uint256 ephemeralPubKeyX;
@@ -152,12 +161,12 @@ library StealthAddresses {
             ephemeralPubKeyX := mload(add(ephemeralPubKey, 0x21))
         }
 
-        uint256 memPtr1 = Memory.allocate(192);
+        uint256 memPtr1 = Memory.allocate(PRE_ALLOCATED_BUFFER_SIZE);
         (, ephemeralPubKeyY) =
             Secp256k1Arithmetic.decompressToAffinePoint(memPtr1, ephemeralPubKeyX, ephemeralPubKeyCompressedY);
 
         // forge-lint: disable-next-item(custom-errors)
-        require(viewingKey.length == 32);
+        require(viewingKey.length == PRIVATE_KEY_SIZE);
 
         uint256 viewPrivKey;
         // forge-lint: disable-next-item(inline-assembly)
@@ -169,7 +178,7 @@ library StealthAddresses {
         require(Secp256k1.isValidNonZeroScalar(viewPrivKey));
 
         // forge-lint: disable-next-item(custom-errors)
-        require(spendingPubKey.length == 33);
+        require(spendingPubKey.length == Secp256k1Arithmetic.COMPRESSED_POINT_SIZE);
 
         uint8 spendPubKeyCompressedY;
         uint256 spendPubKeyX;
@@ -266,10 +275,10 @@ library StealthAddresses {
     ) internal view returns (bytes memory stealthKey) {
         // The `computeStealthKey` function performs the following computations:
         uint256 memPtr1 = Memory.allocate(64);
-        uint256 memPtr2 = Memory.allocate(192);
+        uint256 memPtr2 = Memory.allocate(PRE_ALLOCATED_BUFFER_SIZE);
 
         // forge-lint: disable-next-item(custom-errors)
-        require(ephemeralPubKey.length == 33);
+        require(ephemeralPubKey.length == Secp256k1Arithmetic.COMPRESSED_POINT_SIZE);
 
         uint8 ephemeralPubKeyCompressedY;
         uint256 ephemeralPubKeyX;
@@ -286,7 +295,7 @@ library StealthAddresses {
             Secp256k1Arithmetic.decompressToAffinePoint(memPtr2, ephemeralPubKeyX, ephemeralPubKeyCompressedY);
 
         // forge-lint: disable-next-item(custom-errors)
-        require(viewingKey.length == 32);
+        require(viewingKey.length == PRIVATE_KEY_SIZE);
 
         uint256 viewPrivKey;
         // forge-lint: disable-next-item(inline-assembly)
@@ -298,7 +307,7 @@ library StealthAddresses {
         require(Secp256k1.isValidNonZeroScalar(viewPrivKey));
 
         // forge-lint: disable-next-item(custom-errors)
-        require(viewingKey.length == 32);
+        require(viewingKey.length == PRIVATE_KEY_SIZE);
 
         uint256 spendPrivKey;
         // forge-lint: disable-next-item(inline-assembly)
@@ -334,7 +343,7 @@ library StealthAddresses {
         // forge-lint: disable-next-item(custom-errors)
         require(recovered == stealthAddress);
 
-        Memory.writeWord(memPtr1, 0x00, 32);
+        Memory.writeWord(memPtr1, 0x00, PRIVATE_KEY_SIZE);
         Memory.writeWord(memPtr1, 0x20, stealthPrivKey);
         // forge-lint: disable-next-item(inline-assembly)
         assembly ("memory-safe") {
